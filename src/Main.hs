@@ -1,7 +1,7 @@
 module Main where
 
-import System.Environment
-import Data.List
+import           Data.List
+import           System.Environment
 
 evaluateArgs :: [String] -> IO ()
 evaluateArgs [] = putStrLn "Usage: -[a]ction{add, remove} -[c]ommand{command name} -argume[n]t {argument number x1, x2, x3, n (n = all > x3)} -{\"completion\"}"
@@ -12,10 +12,9 @@ evaluateArgs xs = putStrLn $ "Completion: " ++ completion ++ " - command: " ++ c
     numbers = takeWhile (/= '-') $ getFlag "-n" (maxBound :: Int)
     getFlag flag n = concat . take n . drop 1 $ dropWhile (/= flag) xs
 
-
-
 main :: IO ()
 main = do
+  prog <- getProgName
   args <- getArgs
   evaluateArgs args
-  putStrLn "bye"
+  putStrLn $ prog ++ " is outta here"
