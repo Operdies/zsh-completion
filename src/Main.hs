@@ -1,20 +1,43 @@
 module Main where
 
+import           Control.Monad
 import           Data.List
 import           System.Environment
+import           System.IO
+import           System.Process
+
+
+printUsage :: IO()
+printUsage = let printDesc (x,y) = putStrLn $ "   " ++ x ++ "\t" ++ y ++ "\n"
+             in do
+                putStrLn "Usage:\n"
+                printDesc ("-[a]ction","add, remove")
+                printDesc ("-[c]ommand","command name")
+                printDesc ("-argume[n]t","argument number - the indices you want the completion to be applicable at. Default=All")
+                printDesc ("-com[p]letion","whatever completion you want to add or remove")
+
+
 
 evaluateArgs :: [String] -> IO ()
-evaluateArgs [] = putStrLn "Usage: -[a]ction{add, remove} -[c]ommand{command name} -argume[n]t {argument number x1, x2, x3, n (n = all > x3)} -{\"completion\"}"
---evaluateArgs (x:xs) = putStrLn $ "Adding " ++ completion ++ " to command " ++ command ++ " as argument numbers: " ++ numbers where
-evaluateArgs xs = putStrLn $ "Completion: " ++ completion ++ " - command: " ++ command ++ " - numbers: " ++ numbers where
-    completion = getFlag "-c" 1
-    command = getFlag "-a" 1
-    numbers = takeWhile (/= '-') $ getFlag "-n" (maxBound :: Int)
-    getFlag flag n = concat . take n . drop 1 $ dropWhile (/= flag) xs
+evaluateArgs [] = printUsage
+evaluateArgs xs = putStrLn $ "Action: " ++ action ++
+                             " Command: " ++ command ++
+                             " numbers: " ++ show numbers ++
+                             " completion: " ++ completion
+                             where
+                                completion = concat $ getFlag "-p" 1
+                                action = concat $ getFlag "-a" 1
+                                command = concat $ getFlag "-c" 1
+                                numbers = takeWhile (\x -> head x /= '-') $ getFlag "-n" (maxBound :: Int)
+                                getFlag flag n = take n . drop 1 $ dropWhile (/= flag) xs
+
+readDirectory :: IO String
+readDirectory = readProcess "ls" [] []
+
 
 main :: IO ()
 main = do
-  prog <- getProgName
-  args <- getArgs
-  evaluateArgs args
-  putStrLn $ prog ++ " is outta here"
+    prog <- getProgName
+    args <- getArgs
+    evaluateArgs args
+    putStrLn $ prog ++ " is outta here"
